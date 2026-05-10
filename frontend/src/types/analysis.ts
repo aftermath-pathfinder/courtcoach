@@ -29,6 +29,17 @@ export interface AnalysisResult {
   key_frames: KeyFrame[];
 }
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatContext {
+  angles: AnalysisAngles;
+  tips: CoachingTip[];
+  key_frames: Array<{ label: string; angles: AnalysisAngles }>;
+}
+
 export interface ApiError {
   status: "error";
   message: string;

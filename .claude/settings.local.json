@@ -6,7 +6,8 @@
       "Bash(echo \"Docker compose started in background with PID $!\")",
       "Bash(docker port *)",
       "Bash(xargs kill -9)",
-      "Bash(python -m pytest tests/unit/ -v)"
+      "Bash(python -m pytest tests/unit/ -v)",
+      "WebFetch(domain:pypi.org)"
     ]
   }
 }

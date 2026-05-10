@@ -101,7 +101,7 @@ def extract_key_frames(
             logger.warning("frame_index %d out of range for middle_frames", frame_idx)
             continue
 
-        bgr = middle_frames[frame_idx]
+        bgr = _resize_for_web(middle_frames[frame_idx])
         image_b64 = _encode_frame(bgr)
         annotated = _draw_overlay(bgr, keypoints, frame_angles)
         annotated_b64 = _encode_frame(annotated)
@@ -158,7 +158,16 @@ def _find_follow_through_frame(angles_per_frame: List[Dict[str, float]]) -> Opti
 # ---------------------------------------------------------------------------
 
 
-def _encode_frame(frame_bgr: np.ndarray, quality: int = 50) -> str:
+def _resize_for_web(frame: np.ndarray, max_width: int = 800) -> np.ndarray:
+    """Downscale frame to max_width if wider, using INTER_AREA for sharpness."""
+    h, w = frame.shape[:2]
+    if w <= max_width:
+        return frame
+    scale = max_width / w
+    return cv2.resize(frame, (max_width, int(h * scale)), interpolation=cv2.INTER_AREA)
+
+
+def _encode_frame(frame_bgr: np.ndarray, quality: int = 85) -> str:
     _, buf = cv2.imencode(".jpg", frame_bgr, [cv2.IMWRITE_JPEG_QUALITY, quality])
     return base64.b64encode(buf.tobytes()).decode("utf-8")
 

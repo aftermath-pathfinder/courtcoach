@@ -4,7 +4,8 @@ import { VideoUploader } from "../components/VideoUploader/VideoUploader";
 import { AnalysisStatus } from "../components/AnalysisStatus/AnalysisStatus";
 import { CoachingCard } from "../components/CoachingCard/CoachingCard";
 import { KeyFramePanel } from "../components/KeyFramePanel/KeyFramePanel";
-import type { AnalysisResult, AnalysisState } from "../types/analysis";
+import { ChatSidebar } from "../components/ChatSidebar/ChatSidebar";
+import type { AnalysisResult, AnalysisState, ChatContext } from "../types/analysis";
 
 export function Home() {
   const [state, setState] = useState<AnalysisState>({ phase: "idle" });
@@ -33,6 +34,14 @@ export function Home() {
 
   const isBusy = state.phase === "uploading" || state.phase === "processing";
 
+  function resultToChatContext(r: AnalysisResult): ChatContext {
+    return {
+      angles: r.angles,
+      tips: r.tips,
+      key_frames: r.key_frames.map((kf) => ({ label: kf.label, angles: kf.angles })),
+    };
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-lg mx-auto space-y-8">
@@ -55,6 +64,7 @@ export function Home() {
                 <CoachingCard key={i} tip={tip} />
               ))}
             </section>
+            <ChatSidebar context={resultToChatContext(result)} />
           </>
         )}
       </div>

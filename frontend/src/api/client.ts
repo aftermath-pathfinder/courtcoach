@@ -1,4 +1,4 @@
-import type { AnalysisResult, ApiError } from "../types/analysis";
+import type { AnalysisResult, ApiError, ChatContext, ChatMessage } from "../types/analysis";
 
 const BASE_URL = "/api";
 
@@ -68,4 +68,25 @@ export async function analyzeSwingStream(
 
   if (!result) throw new Error("No result received from server.");
   return result;
+}
+
+export async function sendChatMessage(
+  messages: ChatMessage[],
+  context: ChatContext | null
+): Promise<string> {
+  const response = await fetch(`${BASE_URL}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages,
+      analysis_context: context,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Chat request failed with status ${response.status}`);
+  }
+
+  const data = await response.json() as { reply: string };
+  return data.reply;
 }
