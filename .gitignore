@@ -41,3 +41,5 @@ Thumbs.db
 # ── Test fixtures (added manually, not generated) ──────────────────────────────
 backend/tests/fixtures/*.mp4
 backend/tests/fixtures/*.mov
+
+testfile/
