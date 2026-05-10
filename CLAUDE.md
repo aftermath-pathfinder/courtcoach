@@ -97,6 +97,13 @@ See `.env.example` at root. Never hardcode values. Backend reads from `.env` via
 - **Project structure:** @.claude/skills/project-structure/SKILL.md — apply when generating any new files or folders
 - **Security:** @.claude/skills/security/SKILL.md — apply at all times; never read credentials, never run curl/wget, never auto-push
 
+## Doc Update Rule
+When a feature is confirmed working — tests are green AND the user confirms it works — immediately update the following without being asked:
+- `docs/BACKLOG.md` — mark completed items as `[x]`, advance the current milestone heading, move finished milestones to Done sections
+- `docs/API.md` — reflect any new or changed endpoints, request/response shapes, and frontend client contract
+
+Do this as the last step of any feature session, before wrapping up.
+
 ## What NOT to Do
 - Do not add auth, user accounts, or a database in v0.1
 - Do not run MediaPipe on the frontend or in the browser

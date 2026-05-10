@@ -1,20 +1,35 @@
 # CourtCoach — Backlog
 
-## Current Milestone: v0.2 (Analysis Quality Improvements)
-Goal: key-frame detection with skeleton overlays, structured coaching tips with drills, severity computed locally.
-
-### In Progress / TODO
-- [ ] Maestro E2E test: upload video → see coaching card *(needs `tests/fixtures/sample_forehand.mp4` — add a real ~5s forehand clip manually)*
+## Current Milestone: v0.3 (Conversational Coach)
+Goal: multi-turn AI coaching chat grounded in the player's own biomechanical data.
 
 ### Done
-- [x] Key-frame detection: contact point, wind-up, follow-through frames identified from per-frame angle analysis
+- [x] `POST /api/chat` endpoint — OpenAI `gpt-4o-mini`, multi-turn messages + analysis context
+- [x] System prompt auto-built from angles, severities, coaching tips, and key frame data
+- [x] `ChatSidebar` component — message bubbles, Enter to send, animated loading dots, error state
+- [x] Chat context derived from analysis result and passed automatically after every upload
+
+### TODO
+- [ ] LLM provider abstraction — swap between OpenAI / Claude / HuggingFace via `LLM_PROVIDER` env var
+- [ ] Vision mode — send annotated key frame images to GPT-4o or Claude so the coach literally *sees* the pose
+- [ ] Self-assessment onboarding form (NTRP-style, stored in localStorage, injected as soft context)
+- [ ] Skill level assessment (5-tier NTRP from biomechanics + self-assessment, surfaces perception gaps)
+- [ ] Maestro E2E test: upload video → chat with coach
+
+---
+
+## v0.2 — Done
+Goal: key-frame detection, skeleton overlays, structured coaching tips with drills, severity computed locally.
+
+- [x] Key-frame detection: contact point, wind-up, follow-through frames from per-frame angle analysis
 - [x] Color-coded skeleton overlay drawn on each key frame (green/orange/red by angle severity)
-- [x] Structured coaching tips: `{angle_name, severity, observation, drill}` — severity computed locally from IDEAL_RANGES, never delegated to LLM
-- [x] `constants.py`: shared IDEAL_RANGES and BOUNDARY_TOLERANCE used by both overlay and coaching
-- [x] `extract_keypoints_per_frame()`: per-frame keypoints with frame indices (parallel to existing averaged function)
-- [x] Breaking API change: `coaching_feedback` → `tips` + `key_frames`
-- [x] Frontend: KeyFramePanel with raw ↔ annotated toggle per frame
+- [x] Structured coaching tips: `{angle_name, severity, observation, drill}` — severity from IDEAL_RANGES, never delegated to LLM
+- [x] `constants.py`: shared IDEAL_RANGES and BOUNDARY_TOLERANCE
+- [x] `extract_keypoints_per_frame()`: per-frame keypoints with frame indices
+- [x] Breaking API change: `coaching_feedback` → `tips` + `key_frames`; `key_frames` include per-frame `angles` dict
+- [x] Frontend: KeyFramePanel — vertical stack (full-width images), per-phase angle rows with human descriptions
 - [x] Frontend: CoachingCard updated with severity badge + drill section
+- [x] Key frame images: resized to 800px max width, JPEG quality 85% (up from 50%) for sharpness
 
 ---
 

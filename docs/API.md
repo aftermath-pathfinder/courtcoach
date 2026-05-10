@@ -21,7 +21,7 @@ Upload a tennis swing video and receive pose analysis + coaching feedback.
 ```
 Content-Type: multipart/form-data
 Body:
-  video: File   (MP4 or MOV, max 100MB, max 30 seconds)
+  video: File   (MP4 or MOV, max 100 MB)
 ```
 
 **Response 200**
@@ -31,26 +31,43 @@ Body:
   "processing_time_seconds": 14.3,
   "keypoints_extracted": 10,
   "angles": {
-    "elbow_angle": 162.4,
-    "shoulder_rotation": 87.1,
-    "hip_turn": 76.3,
-    "knee_flex": 28.6,
-    "follow_through": 195.2
+    "elbow_angle": 147.0,
+    "shoulder_rotation": 88.0,
+    "hip_turn": 80.0,
+    "knee_flex": 28.0,
+    "follow_through": 177.0
   },
-  "coaching_feedback": [
-    "Your elbow angle at contact is excellent — nearly straight arm generates maximum power.",
-    "Your shoulder rotation is within the ideal range, but try to initiate the turn earlier from the split step.",
-    "Increase your knee flex slightly to 30-35° for a more powerful ground-up kinetic chain."
+  "tips": [
+    {
+      "angle_name": "elbow_angle",
+      "severity": "critical",
+      "observation": "Your elbow angle at contact is 147° — too bent. Aim for 160–170°.",
+      "drill": "Shadow swing drill: practice slow-motion swings extending your arm fully at contact."
+    }
+  ],
+  "key_frames": [
+    {
+      "label": "contact",
+      "angles": {
+        "elbow_angle": 147.0,
+        "shoulder_rotation": 88.0,
+        "hip_turn": 80.0,
+        "knee_flex": 28.0,
+        "follow_through": 177.0
+      },
+      "image_b64": "<base64-encoded JPEG>",
+      "annotated_image_b64": "<base64-encoded JPEG with skeleton overlay>"
+    }
   ]
 }
 ```
 
-> `keypoints_extracted` is always **10** on a successful response — the ten BlazePose landmarks required to compute the five angles (both shoulders, elbows, wrists, hips, and knees).
+**Field notes**
+- `keypoints_extracted` — always **10** on success (both shoulders, elbows, wrists, hips, knees)
+- `tips` — 1–5 structured coaching observations; `severity` is one of `"good"`, `"warning"`, `"critical"`, computed locally from `IDEAL_RANGES` (never delegated to the LLM)
+- `key_frames` — 1–3 items: `"contact"`, `"windup"`, `"follow_through"`. Images are 800px-wide JPEG at 85% quality, base64-encoded. `angles` are the per-frame values for that specific swing moment.
 
 **Response 422 — Invalid input or pose extraction failure**
-
-Returned when the video is too large, when pose extraction raises a `ValueError` (e.g. the full body is not visible), or when a required field is missing.
-
 ```json
 {
   "detail": {
@@ -60,19 +77,93 @@ Returned when the video is too large, when pose extraction raises a `ValueError`
 }
 ```
 
-Other `message` values returned as 422:
-- `"No pose detected in video."` — MediaPipe found no person in any frame
-- `"<landmark> landmark missing from keypoints"` — a required body part was out of frame
+---
+
+## POST /api/analyze/stream
+Same pipeline as `/api/analyze` but streams progress as Server-Sent Events.
+
+**Request** — identical to `/api/analyze`.
+
+**Response** — `Content-Type: text/event-stream`. Each event is a `data: {json}\n\n` line.
+
+**Event stages (in order)**
+
+| `stage`      | When emitted                              |
+|---|---|
+| `extracting` | MediaPipe pose extraction starting        |
+| `angles`     | Extraction done, computing joint angles   |
+| `coaching`   | Angles done, calling LLM for tips         |
+| `keyframes`  | Tips done, selecting and annotating frames|
+| `done`       | All done — `data` field contains full result (same shape as `/api/analyze` 200 response) |
+| `error`      | Any failure — `message` field has reason  |
+
+**Example events**
+```
+data: {"stage": "extracting", "message": "Extracting pose keypoints with BlazePose…"}
+
+data: {"stage": "angles", "message": "Detected 8 valid frames. Computing joint angles…"}
+
+data: {"stage": "coaching", "message": "Computing angles done. Generating structured coaching tips…"}
+
+data: {"stage": "keyframes", "message": "Identifying key swing moments and drawing overlays…"}
+
+data: {"stage": "done", "message": "Analysis complete in 14.3s.", "data": { ...full result... }}
+```
+
+---
+
+## POST /api/chat
+Multi-turn coaching conversation grounded in a prior analysis.
+
+**Request**
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Why is my elbow angle bad?" },
+    { "role": "assistant", "content": "Your elbow at contact is 147°…" },
+    { "role": "user", "content": "What drill should I do?" }
+  ],
+  "analysis_context": {
+    "angles": { "elbow_angle": 147.0, "shoulder_rotation": 88.0, "hip_turn": 80.0, "knee_flex": 28.0, "follow_through": 177.0 },
+    "tips": [ { "angle_name": "elbow_angle", "severity": "critical", "observation": "...", "drill": "..." } ],
+    "key_frames": [ { "label": "contact", "angles": { ... } } ]
+  }
+}
+```
+
+- `messages` — full conversation history, newest last. Send every prior turn so the model has context.
+- `analysis_context` — optional. When provided, the system prompt includes angle values, severities, drills already given, and key frame data. Omit if no analysis has been run yet.
+
+**Response 200**
+```json
+{ "reply": "To improve your elbow extension, try the shadow swing drill…" }
+```
+
+**Response 500 — Missing API key**
+```json
+{
+  "detail": {
+    "status": "error",
+    "message": "OPENAI_API_KEY environment variable is not set."
+  }
+}
+```
 
 ---
 
 ## Frontend API Client Contract
 
-The frontend `api/client.ts` must export:
+`frontend/src/api/client.ts` exports:
 
 ```typescript
-export async function analyzeSwing(file: File): Promise<AnalysisResult>
-// Throws an Error with a user-readable message on failure
+// Non-streaming analysis
+analyzeSwing(file: File): Promise<AnalysisResult>
+
+// Streaming analysis with progress callbacks
+analyzeSwingStream(file: File, onProgress: (message: string) => void): Promise<AnalysisResult>
+
+// Multi-turn coaching chat
+sendChatMessage(messages: ChatMessage[], context: ChatContext | null): Promise<string>
 ```
 
-All other fetch logic stays in `client.ts` — components only call this function.
+All fetch logic stays in `client.ts` — components only call these functions.
