@@ -1,25 +1,31 @@
 appId: com.courtcoach.web
 ---
 # Flow: Upload a video and see coaching feedback
-# Prerequisites: frontend running on localhost:5173, backend running on localhost:8000
+# Prerequisites:
+#   - frontend running on localhost:5173
+#   - backend running on localhost:8000
+#   - tests/fixtures/sample_forehand.mp4 must exist (add a real ~5s forehand clip)
 
 - launchApp:
     browser: chrome
     url: "http://localhost:5173"
 
-- assertVisible: "Upload your swing video"
+- assertVisible: "CourtCoach"
 
-- tapOn: "Choose File"
+- assertVisible: "Drag and drop your swing video here"
 
-- inputText: "${PWD}/tests/fixtures/sample_forehand.mp4"
+- tapOn:
+    id: "file-input"
 
-- assertVisible: "Analyzing your swing"
+- inputFile: "tests/fixtures/sample_forehand.mp4"
+
+- assertVisible: "Analysing your swing"
 
 - waitForAnimationToEnd:
     timeout: 30000
 
-- assertVisible: "Coaching Feedback"
+- assertVisible: "Analysis complete"
 
-- assertVisible: "elbow"  # coaching card contains elbow feedback
+- assertVisible: "elbow"
 
-- assertNotVisible: "error"
+- assertNotVisible: "Something went wrong"

@@ -39,4 +39,7 @@ Example: `/feature add video compression before upload`
 
 7. **Final check**
    - Run `/test all`
-   - Update `docs/BACKLOG.md` to mark feature complete
+
+8. **Update documentation**
+   - Run `/doc` — the doc-writer agent will update CHANGELOG.md, BACKLOG.md, README.md, and API.md automatically
+   - Review the doc changes before committing — do not skip this step

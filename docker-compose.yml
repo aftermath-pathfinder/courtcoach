@@ -1,5 +1,5 @@
 # Run everything: docker-compose up --build
-# Frontend → http://localhost:5173   Backend → http://localhost:8000
+# Frontend → http://localhost:5174   Backend → http://localhost:8000
 
 services:
   frontend:
@@ -7,7 +7,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "5173:5173"
+      - "5174:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -20,6 +20,7 @@ services:
       - courtcoach
 
   backend:
+    platform: linux/amd64
     build:
       context: ./backend
       dockerfile: Dockerfile

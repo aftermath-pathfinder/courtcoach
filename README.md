@@ -58,23 +58,28 @@ npm run dev
 
 ---
 
+## Running the Tests
+
+All test commands use Docker so you do not need a local Python or Node.js environment beyond what the Setup section requires.
+
+```bash
+# Backend unit + integration tests
+docker-compose run --rm --no-deps backend pytest tests/ -v
+
+# Frontend unit tests
+docker-compose run --rm --no-deps frontend npm run test -- --run
+
+# E2E (Maestro) — requires both services running
+maestro test .maestro/flows/
+```
+
+> **Note:** One integration test (`test_analyze_returns_success_shape`) is currently skipped. To enable it, add a real forehand clip at `backend/tests/fixtures/sample_forehand.mp4` (5–10 seconds, MP4, full body visible).
+
+---
+
 ## Development
 
 See `CLAUDE.md` for full development guide.
-
-```bash
-# Run all tests
-/test all   # Claude Code command
-
-# Run backend tests only
-cd backend && pytest -v
-
-# Run frontend tests only
-cd frontend && npm run test
-
-# Run E2E
-maestro test .maestro/flows/
-```
 
 ---
 

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(docker run *)",
+      "Bash(echo \"Docker compose started in background with PID $!\")",
+      "Bash(docker port *)",
+      "Bash(xargs kill -9)"
     ]
   }
 }
