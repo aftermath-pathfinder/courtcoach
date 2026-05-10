@@ -8,6 +8,13 @@ const ANNOTATED_B64 = "YW5u"; // base64 for "ann"
 
 const makeFrame = (label: KeyFrame["label"]): KeyFrame => ({
   label,
+  angles: {
+    elbow_angle: 165.0,
+    shoulder_rotation: 90.0,
+    knee_flex: 28.0,
+    hip_turn: 80.0,
+    follow_through: 195.0,
+  },
   image_b64: RAW_B64,
   annotated_image_b64: ANNOTATED_B64,
 });

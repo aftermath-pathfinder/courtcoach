@@ -31,6 +31,7 @@ def _key_frame_wire(kf) -> dict:
     """Serialize a KeyFrame for the wire format, omitting internal fields."""
     return {
         "label": kf.label,
+        "angles": kf.angles,
         "image_b64": kf.image_b64,
         "annotated_image_b64": kf.annotated_image_b64,
     }

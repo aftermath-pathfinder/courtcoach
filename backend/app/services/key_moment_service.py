@@ -52,6 +52,7 @@ class KeyFrame:
     label: str                              # "contact" | "windup" | "follow_through"
     frame_index: int                        # index into middle_frames list
     keypoints: Dict[int, Tuple[float, float]]
+    angles: Dict[str, float]               # per-frame angle values for this key moment
     image_b64: str                          # raw JPEG, base64
     annotated_image_b64: str               # skeleton-overlaid JPEG, base64
 
@@ -110,6 +111,7 @@ def extract_key_frames(
                 label=label,
                 frame_index=frame_idx,
                 keypoints=keypoints,
+                angles=frame_angles,
                 image_b64=image_b64,
                 annotated_image_b64=annotated_b64,
             )

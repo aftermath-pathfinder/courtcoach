@@ -15,6 +15,7 @@ export interface CoachingTip {
 
 export interface KeyFrame {
   label: "contact" | "windup" | "follow_through";
+  angles: AnalysisAngles;
   image_b64: string;
   annotated_image_b64: string;
 }

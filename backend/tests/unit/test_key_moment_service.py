@@ -11,6 +11,9 @@ import pytest
 
 # Stub cv2 before importing the module under test
 _cv2_mod = types.ModuleType("cv2")
+_cv2_mod.VideoCapture = MagicMock()
+_cv2_mod.cvtColor = MagicMock()
+_cv2_mod.COLOR_BGR2RGB = 4
 _cv2_mod.imencode = MagicMock(return_value=(True, np.array([1, 2, 3], dtype=np.uint8)))
 _cv2_mod.line = MagicMock()
 _cv2_mod.circle = MagicMock()
@@ -99,17 +102,18 @@ class TestExtractKeyFrames:
     def test_follow_through_frame_has_max_follow_through(self):
         frames = _make_frames(3)
         valid = _make_valid_frames(3)
+        # Frame 0: max shoulder (windup), Frame 1: closest elbow to 165 (contact), Frame 2: max follow
         angles = [
-            _make_angles(elbow=180.0, shoulder=60.0, follow=210.0),
-            _make_angles(elbow=163.0, shoulder=50.0, follow=195.0),
-            _make_angles(elbow=150.0, shoulder=40.0, follow=180.0),
+            _make_angles(elbow=180.0, shoulder=120.0, follow=160.0),
+            _make_angles(elbow=163.0, shoulder=80.0, follow=150.0),
+            _make_angles(elbow=150.0, shoulder=95.0, follow=210.0),
         ]
 
         result = extract_key_frames(frames, valid, angles)
         follow = next((kf for kf in result if kf.label == "follow_through"), None)
 
         assert follow is not None
-        assert follow.frame_index == 0  # max follow_through=210
+        assert follow.frame_index == 2  # max follow_through=210
 
     def test_deduplication_emits_fewer_frames_when_same_index_selected(self):
         # All three criteria point to index 0
