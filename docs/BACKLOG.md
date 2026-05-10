@@ -151,3 +151,7 @@ Goal: key-frame detection, skeleton overlays, structured coaching tips with dril
 - [ ] Session history (localStorage, no auth needed)
 - [ ] Share your analysis (generate a shareable link)
 - [ ] Maestro E2E tests for new flows (chat, key frames, onboarding form)
+
+
+
+Notes: Use roger federer videos haha. Its being called out without the context of the ball being received and the hitting strategy
