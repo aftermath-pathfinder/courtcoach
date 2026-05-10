@@ -1,0 +1,37 @@
+# Run everything: docker-compose up --build
+# Frontend → http://localhost:5173   Backend → http://localhost:8000
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_POLL_INTERVAL=1000
+    depends_on:
+      - backend
+    networks:
+      - courtcoach
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+    networks:
+      - courtcoach
+
+networks:
+  courtcoach:
+    driver: bridge

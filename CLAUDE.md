@@ -1,0 +1,106 @@
+# CourtCoach — Claude Code Context
+
+## What This Is
+A web app that analyzes tennis swing form from uploaded video using MediaPipe pose estimation and returns AI coaching feedback via HuggingFace. Built to learn ML pipeline architecture.
+
+## Repo Structure
+```
+courtcoach/
+├── frontend/          # React + Vite + TypeScript
+├── backend/           # FastAPI + Python + MediaPipe
+├── docker-compose.yml # Runs backend locally
+├── docs/              # Architecture decisions, backlog
+└── .claude/           # Claude Code agents and commands
+```
+
+## Stack
+- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS
+- **Backend:** FastAPI, Python 3.11, MediaPipe, HuggingFace Inference API
+- **Container:** Docker + docker-compose (backend only; frontend runs via Vite dev server)
+- **Testing:** Vitest + React Testing Library (frontend), pytest (backend), Maestro (E2E)
+
+## Dependency Versioning Rule
+Before installing any package or writing any `requirements.txt` / `package.json`:
+1. **Always web search for the latest stable version** of each dependency — do not assume versions from training data, they are likely outdated
+2. Pin exact versions in committed files — never use `@latest` or `*` (e.g. `react@18.3.1`, `fastapi==0.115.0`)
+3. Check for known incompatibilities between pinned versions before installing
+4. If a package has a major version released in the last 6 months, read its breaking changes before adopting it
+5. Add a comment at the top of `requirements.txt` and `package.json` with the date versions were last verified
+
+## Key Commands
+
+### Frontend
+```bash
+cd frontend
+npm install          # install deps
+npm run dev          # dev server → http://localhost:5173
+npm run test         # vitest unit tests
+npm run typecheck    # tsc --noEmit
+npm run lint         # eslint
+npm run build        # production build
+```
+
+### Backend
+```bash
+cd backend
+docker-compose up --build   # start containerized backend → http://localhost:8000
+docker-compose down         # stop
+docker-compose logs -f      # tail logs
+
+# Without Docker (direct):
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+pytest                      # run all backend tests
+pytest tests/unit/          # unit tests only
+pytest tests/integration/   # integration tests only
+```
+
+### E2E (Maestro)
+```bash
+maestro test .maestro/flows/upload_video.yaml
+maestro test .maestro/flows/
+```
+
+## Code Style
+- TypeScript strict mode — no `any` types
+- Named exports only — no default exports
+- Functional React components with hooks only — no class components
+- Use ES modules (`import/export`) — no CommonJS (`require`)
+- Python: type hints on all functions, Black formatting, no bare `except`
+- Never commit secrets or API keys — use `.env` files (see `.env.example`)
+
+## Architecture Rules
+- Frontend talks to backend ONLY via `/api/*` routes (proxied by Vite in dev)
+- Backend processes video server-side — no on-device ML
+- MediaPipe runs in Docker container on CPU — expect 10–20s processing time
+- HuggingFace Inference API is called from backend only — never from frontend
+- Video files are never persisted server-side — process in memory and discard
+
+## Adding a Feature
+1. Check `docs/BACKLOG.md` — is it in scope for current milestone?
+2. Write types/interfaces first (`frontend/src/types/`)
+3. Write backend endpoint + unit test before wiring frontend
+4. Wire frontend component + unit test
+5. Run full test suite before committing
+6. Update `docs/BACKLOG.md` if scope changed
+
+## Environment Variables
+See `.env.example` at root. Never hardcode values. Backend reads from `.env` via `python-dotenv`.
+
+## Testing Rules
+- New backend endpoint → requires pytest unit test covering happy path + error case
+- New React component → requires Vitest + RTL test
+- New user flow → requires Maestro flow file in `.maestro/flows/`
+- Never skip tests to ship faster — add to backlog instead
+
+## Skills
+- **Project structure:** @.claude/skills/project-structure/SKILL.md — apply when generating any new files or folders
+- **Security:** @.claude/skills/security/SKILL.md — apply at all times; never read credentials, never run curl/wget, never auto-push
+
+## What NOT to Do
+- Do not add auth, user accounts, or a database in v0.1
+- Do not run MediaPipe on the frontend or in the browser
+- Do not persist video files — memory only
+- Do not call HuggingFace from the frontend
+- Do not add webcam recording yet — upload only for v0.1
+- Do not deploy to cloud yet — localhost only for v0.1

@@ -1,0 +1,1 @@
+# CoachingService: builds structured prompt from angle values + ideal ranges, calls HuggingFace Inference API (Mistral-7B-Instruct), returns list of 3 coaching strings; falls back to generic tips on API failure
